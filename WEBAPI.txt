@@ -1,0 +1,304 @@
+WEBAPI
+======================
+dotnet new web -f net6.0
+dotnet add package Microsoft.EntityFrameworkCore --version 6.0.10
+dotnet add package Microsoft.EntityFrameworkCore.SqlServer --version 6.0.10
+dotnet add package Microsoft.EntityFrameworkCore.Design --version 6.0.10
+dotnet tool install --global dotnet-ef --version 6.0.10
+======================
+migracja:
+dotnet ef migrations add Initial
+dotnet ef database update
+======================
+start:
+dotnet run
+======================
+appsettings.json:
+"ConnectionStrings": {
+   "default": "Server=(localdb)\\MSSQLLocalDB;Database=ContactsDb;Trusted_Connection=True;MultipleActiveResultSets=true"
+  }
+======================
+program.cs (polaczenie z react):
+using Microsoft.EntityFrameworkCore;
+var builder = WebApplication.CreateBuilder(args);
+
+//dodanie cors
+builder.Services.AddCors();
+
+//konfiguracja swaggera
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("default")) );
+
+var app = builder.Build();
+
+//konfiguracja middleware
+if (app.Environment.IsDevelopment()){
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+//konfiguracja cors
+app.UseCors(options => {
+    options.WithOrigins("http://localhost:5137").AllowAnyMethod().AllowAnyHeader(); //adres aplikacji React
+});
+
+//get - pobieranie wszystkich kontaktów
+app.MapGet("api/contacts", async (AppDbContext db) => {
+    try{
+        var contacts = await db.Contacts.ToListAsync();
+        return Results.Ok(contacts);
+    }
+    catch(Exception ex){
+        return Results.Problem(ex.Message);
+    }
+});
+
+// GET /api/contacts/{id} - Pobieranie pojedynczego kontaktu
+app.MapGet("/api/contacts/{id}", async (int id, AppDbContext db) => {
+    try {
+        var contact = await db.Contacts.FindAsync(id);
+        return contact is not null ? Results.Ok(contact) : Results.NotFound();
+    }
+    catch (Exception ex) {
+        return Results.Problem(
+            detail: "Wystąpił błąd podczas pobierania kontaktu",
+            title: "Błąd serwera"
+        );
+    }
+});
+
+// POST /api/contacts - Dodawanie nowego kontaktu
+app.MapPost("/api/contacts", async (Contact contact, AppDbContext db) => {
+    try {
+        db.Contacts.Add(contact);
+        await db.SaveChangesAsync();
+        return Results.Created($"/api/contacts/{contact.Id}", contact);
+    }
+    catch (Exception ex) {
+        return Results.Problem(
+            detail: "Wystąpił błąd podczas dodawania kontaktu",
+            title: "Błąd serwera"
+        );
+    }
+});
+
+// Uruchomienie aplikacji
+app.Run();
+
+// Model danych
+public enum Sex {Male, Female}
+
+//klasa reprezentująca kontakt
+
+public class Contact{
+    public int Id {get; private set;}
+    public string FirstName {get; private set;} = string.Empty;
+    public string LastName {get; private set;} = string.Empty;
+
+    public Sex Sex {get; private set;}
+    public string Email {get; private set;} = string.Empty;
+    public int Age {get; private set;}
+
+    //prywatny konstruktor bezparametrowy
+    private Contact(){}
+
+    //publiczny konstruktor do tworzenia nowych kontaktów 
+    public Contact (int id, string firstName, string lastName, Sex sex, string email, int age){
+        Id = id;
+        FirstName = !string.IsNullOrWhiteSpace(firstName)? firstName : throw new ArgumentException("First name cannot be empty");
+        LastName = !string.IsNullOrWhiteSpace(lastName)? lastName : throw new ArgumentException("Last name cannot be empty");
+        Sex = sex;
+        Email = !string.IsNullOrWhiteSpace(email)? email : throw new ArgumentException("Email cannot be empty");
+        Age = age >= 0 ? age : throw new ArgumentException("Age cannot be negative");
+    }
+}
+
+//kontekst bazy danych
+public class AppDbContext : DbContext{
+    //wlasciwosc DbSet reprezentujac tabele kontaktów
+    public DbSet<Contact> Contacts => Set<Contact>();
+    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options){}
+}
+======================
++REACT:
+======================
+material ui:
+npm install @mui/material @emotion/react @emotion/styled
+======================
+model src/models/Contact.ts
+export enum Sex {
+    Male,
+    Female
+}
+
+export class Contact {
+    constructor(
+        public id: number,
+        public firstName: string,
+        public lastName: string,
+        public sex: Sex,
+        public email: string,
+        public age: number
+    ) {}
+}
+======================
+component ContactList.tsx:
+import {useEffect, useState} from 'react';
+import { List, ListItem, ListItemText, Avatar, Card, CardHeader, CardContent } from '@mui/material';
+import { Contact } from '../models/Contact';
+
+export const ContactList = () => {
+    const [contacts, setContacts] = useState<Contact[]>([]);
+
+    useEffect(() => {
+        const fetchContacts = async () => {
+            const response = await fetch('http://localhost:5000/api/contacts');
+            const data = await response.json();
+            setContacts(data);
+    };
+    fetchContacts();
+    }, []);
+    return (
+        <Card>
+            <CardHeader title="Lista kontaktów" />
+            <CardContent>
+                <List>
+                    {contacts.map((contact, idx) => (
+                        <ListItem key={contact.id}>
+                            <Avatar>{idx + 1}</Avatar>
+                            <ListItemText 
+                                primary={`${contact.firstname} ${contact.lastname}`}
+                                secondary={contact.email}
+                            />
+                        </ListItem>
+                    ))}
+                </List>
+            </CardContent>
+        </Card>
+    );
+};
+======================
+AddContact:
+import { useState } from 'react';
+import { TextField, Button, Grid, MenuItem, Typography } from '@mui/material';
+import { Contact, Sex } from '../models/Contact';
+
+export const AddContactForm = ({ onContactAdded }: { onContactAdded: (contact: Contact) => void }) => {
+    const [firstName, setFirstName] = useState('');
+    const [lastName, setLastName] = useState('');
+    const [email, setEmail] = useState('');
+    const [age, setAge] = useState<number | ''>('');
+    const [sex, setSex] = useState<Sex>(Sex.Male);
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        // Tworzymy nowy obiekt kontaktu
+        const newContact = {
+            id: 0, // Backend wygeneruje ID
+            firstName,
+            lastName,
+            email,
+            age: Number(age),
+            sex,
+        };
+
+        try {
+            // Wysyłamy żądanie POST do API
+            const response = await fetch('http://localhost:5000/api/contacts', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(newContact),
+            });
+
+            if (response.ok) {
+                const addedContact = await response.json();
+                onContactAdded(addedContact); // Informujemy rodzica o nowym kontakcie
+                // Resetujemy formularz
+                setFirstName('');
+                setLastName('');
+                setEmail('');
+                setAge('');
+                setSex(Sex.Male);
+            } else {
+                console.error('Błąd podczas dodawania kontaktu');
+            }
+        } catch (error) {
+            console.error('Wystąpił błąd:', error);
+        }
+    };
+
+    return (
+        <form onSubmit={handleSubmit}>
+            <Typography variant="h6" gutterBottom>
+                Dodaj nowy kontakt
+            </Typography>
+            <Grid container spacing={2}>
+                <Grid item xs={12} sm={6}>
+                    <TextField
+                        label="Imię"
+                        value={firstName}
+                        onChange={(e) => setFirstName(e.target.value)}
+                        fullWidth
+                        required
+                    />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                    <TextField
+                        label="Nazwisko"
+                        value={lastName}
+                        onChange={(e) => setLastName(e.target.value)}
+                        fullWidth
+                        required
+                    />
+                </Grid>
+                <Grid item xs={12}>
+                    <TextField
+                        label="Email"
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        fullWidth
+                        required
+                    />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                    <TextField
+                        label="Wiek"
+                        type="number"
+                        value={age}
+                        onChange={(e) => setAge(e.target.value === '' ? '' : Number(e.target.value))}
+                        fullWidth
+                        required
+                    />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                    <TextField
+                        label="Płeć"
+                        select
+                        value={sex}
+                        onChange={(e) => setSex(Number(e.target.value))}
+                        fullWidth
+                        required
+                    >
+                        <MenuItem value={Sex.Male}>Mężczyzna</MenuItem>
+                        <MenuItem value={Sex.Female}>Kobieta</MenuItem>
+                    </TextField>
+                </Grid>
+                <Grid item xs={12}>
+                    <Button type="submit" variant="contained" color="primary" fullWidth>
+                        Dodaj kontakt
+                    </Button>
+                </Grid>
+            </Grid>
+        </form>
+    );
+};
+
+
+
+

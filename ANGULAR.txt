@@ -1,0 +1,130 @@
+ANGULAR:
+======================
+ng new zadanie1 --minimal=true --standalone=false
+ng serve --open
+======================
+src/app/app.component.ts
+
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-root',
+  template: `
+<p id="output"></p>
+<button (click)="showName()">Pokaż imię i nazwisko</button>
+<button (click)="changeFontSize()">Zmień rozmiar czcionki</button>
+<button (click)="changeColor()">Zmień kolor i przekreśl</button>
+
+<ul>
+  <li *ngFor="let link of links" 
+      [style.backgroundColor]="selectedLink === link.url ? 'yellow' : 'transparent'"
+      (click)="selectLink(link.url)">
+    <a [href]="link.url" target="_blank">{{ link.name }}</a>
+  </li>
+</ul>
+
+<p>{{ counter }}</p>
+<button (click)="increment()">+1</button>
+<button (click)="decrement()">-1</button>
+
+<button (click)="changeCounter(1)">+1</button>
+<button (click)="changeCounter(-1)">-1</button>
+<button (click)="changeCounter(2)">+2</button>
+<button (click)="changeCounter(-2)">-2</button>
+
+<img [src]="'assets/images/' + images[currentIndex]" alt="Galeria" />
+<button (click)="previous()">Poprzednie</button>
+<button (click)="next()">Następne</button>
+<br>
+<p>blokowane przyciski</p>
+<img [src]="'assets/images/' + images[currentIndex]" alt="Galeria" />
+<button (click)="previous()" [disabled]="currentIndex === 0">Poprzednie</button>
+<button (click)="next()" [disabled]="currentIndex === images.length - 1">Następne</button>
+<p>znikanie przyciskow</p>
+<img [src]="'assets/images/' + images[currentIndex]" alt="Galeria" />
+<button *ngIf="currentIndex > 0" (click)="previous()">Poprzednie</button>
+<button *ngIf="currentIndex < images.length - 1" (click)="next()">Następne</button>
+  `,
+  standalone: false,
+  styles: [`
+    .font-size {
+      font-size: 20px;
+    }
+    
+    .color-strike {
+      color: green;
+      text-decoration: line-through;
+    }
+  `]
+})
+export class AppComponent {
+
+  //wyswietlanie imienia i zmiana stylu
+  showName() {
+    const output = document.getElementById('output');
+    if (output) {
+      output.textContent = 'Jan Kowalski';
+    }
+  }
+
+  changeFontSize() {
+    const output = document.getElementById('output');
+    if (output) {
+      output.classList.toggle('font-size');
+    }
+  }
+
+  changeColor() {
+    const output = document.getElementById('output');
+    if (output) {
+      output.classList.toggle('color-strike');
+    }
+  }
+//zdanie z linkami
+  links = [
+    { name: 'Google', url: 'https://www.google.com' },
+    { name: 'YouTube', url: 'https://www.youtube.com' },
+    { name: 'Angular', url: 'https://angular.io' }
+  ];
+
+  selectedLink: string | null = null;
+
+  selectLink(link: string) {
+    this.selectedLink = link;
+  }
+// zadanie z licznikiem
+  counter = 0;
+
+  increment() {
+    this.counter++;
+  }
+
+  decrement() {
+    this.counter--;
+  }
+
+  changeCounter(value: number) {
+    this.counter += value;
+  }
+
+  //zadanie galeria
+  images = ['image1.jpg', 'image2.jpg', 'image3.jpg'];
+  currentIndex = 0;
+
+  next() {
+    if (this.currentIndex < this.images.length - 1) {
+      this.currentIndex++;
+    } else {
+      alert('To jest ostatnie zdjęcie');
+    }
+  }
+
+  previous() {
+    if (this.currentIndex > 0) {
+      this.currentIndex--;
+    } else {
+      alert('To jest pierwsze zdjęcie');
+    }
+  }
+}
+

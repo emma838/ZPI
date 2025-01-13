@@ -1,0 +1,162 @@
+REACT
+======================
+npm create vite
+npm install
+npm run dev
+======================
+src/components:
+zd1.tsx itd.
+
+//imie i nazwisko:
+import {useState} from 'react';
+
+export const Zd1 = () => {
+    const [name, setName] = useState(" ");
+
+    const handleClick = () => {
+        setName("Emilia Pustelnik");
+    };
+
+    return (
+        <div>
+            <p>{name}</p>
+            <button onClick={handleClick}>Pokaż autora</button>
+        </div>
+    );
+};
+
+//linii:
+import {useState} from 'react';
+
+export const Zd2 = () => {
+    const links = [
+        {id: 1, name: "Allegro", url: "https://allegro.pl"},
+        {id: 2, name: "Google", url: "https://google.com"},
+        {id: 3, name: "Wikipedia", url: "https://wikipedia.org"},
+    ];
+
+    const [selectedLinks, setSelectedLinks] = useState<number[]>([]);
+
+    const handleClick = (id: number) => {
+        setSelectedLinks((prev) => 
+            prev.includes(id) ? prev.filter((linkId) => linkId !== id) : [...prev, id]
+        );
+
+====
+  const handleClick = (id: number) => {
+    setSelectedLink(id);
+  };
+====
+};
+
+
+return(
+    <ul>
+        {links.map((link) => (
+            <li
+            key={link.id}
+            onClick={() => handleClick(link.id)}
+            style={{backgroundColor: selectedLinks.includes(link.id) ? "lightblue" : "white", cursor: "pointer"}}>
+                <a href={link.url} target='_blank' rel="noopener noreferrer">{link.name}</a>
+            </li>
+        ))}
+    </ul>
+);
+};
+
+//licznik
+import {useState} from 'react';
+
+export const Zd4 = () =>{
+    const [count, setCount] = useState(0);
+
+    const handleClick = (value: number) => {
+        setCount(count + value);
+      };
+
+    return(
+        <div>
+            <p>Wartość: {count}</p>
+            <button onClick={() => handleClick(-2)}>-2</button>
+            <button onClick={() => setCount(count - 1)}>-1</button>
+            <button onClick={() => setCount(count + 1)}>+1</button>
+            <button onClick={() => handleClick(+2)}>+2</button>
+
+        </div>
+    );
+};
+
+//galeria:
+import React, {useState} from 'react';
+const images = [
+    "/assets/react/svg",
+  "https://via.placeholder.com/300x200?text=Image+2",
+  "https://via.placeholder.com/300x200?text=Image+3",
+  "https://via.placeholder.com/300x200?text=Image+4",
+];
+
+export const Zd5 = () => {
+    const [currentImage, setCurrentImage] = useState(0);
+
+    const handleNext = () => {
+        if(currentImage < images.length - 1){
+            setCurrentImage(currentImage + 1);
+        }else{
+            alert("To jest ostatnie zdjęcie");
+        }
+    };
+    const handlePrev = () => {
+        if(currentImage > 0){
+            setCurrentImage(currentImage - 1);
+        }else{
+            alert("To jest ostatnie zdjęcie");
+        }
+    };
+
+    return(
+        <div>
+            <img src={images[currentImage]} alt="zdjęcie" />
+            <button onClick={handlePrev}>Poprzednie</button>
+            <button onClick={handleNext}>Następne</button>
+        </div>
+    );
+
+    };
+======================
+App.tsx:
+import { Zd1 } from "./components/zd1";
+import { Zd2 } from "./components/zd2";
+import { Zd3 } from "./components/zd3";
+import { Zd4 } from "./components/zd4";
+import { Zd5 } from "./components/zd5";
+
+import './App.css'
+
+function App(){
+  return(
+    <div className="App">
+      <h3>Zd1</h3>
+      <Zd1/>
+
+      <h3>Zd2</h3>
+      <Zd2/>
+
+      <h3>Zd3</h3>
+      <Zd3/>
+
+      <h3>Zd4</h3>
+      <Zd4/>
+
+      
+      <h3>Zd5</h3>
+      <Zd5/>
+    </div>
+  );
+}
+
+export default App;
+
+
+
+
+

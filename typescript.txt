@@ -1,0 +1,304 @@
+TYPESCRIPT
+==================
+node:
+npm init
+===================
+npm install –save-dev typescript
+npm install –save-dev ts-loader
+npm install –save-dev webpack
+npm install –save-dev webpack-cli
+npm install –save-dev webpack-dev-server
+npm install –save-dev html-webpack-plugin
+
+npx tsc --init
+===================
+tsconfig.js:
+{
+  "compilerOptions": {
+    "target": "ES2020",                                  /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */
+    "module": "commonjs",                                /* Specify what module code is generated. */
+    "rootDir": "./src",                                  /* Specify the root folder within your source files. */
+    "moduleResolution": "node",                     /* Specify how TypeScript looks up a file from a given module specifier. */
+    "outDir": "./build",                                   /* Specify an output folder for all emitted files. */
+    "esModuleInterop": true,                             /* Emit additional JavaScript to ease support for importing CommonJS modules. This enables 'allowSyntheticDefaultImports' for type compatibility. */
+    "forceConsistentCasingInFileNames": true,            /* Ensure that casing is correct in imports. */
+    "strict": true,                                      /* Enable all strict type-checking options. */
+    "skipLibCheck": true                                 /* Skip type checking all .d.ts files. */
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules"]
+}
+======================
+dodanie katalogu src i dist
+======================
+npm install --save-dev webpack webpack-cli
+======================
+webpack.config.js:
+let htmlWebpackPlugin = require('html-webpack-plugin');
+let path = require('path');
+module.exports = {
+mode: 'development',
+devtool: 'source-map',
+entry: {
+app: './src/index.ts'
+},
+output: {
+path: path.join(__dirname, './build'),
+filename: 'bundle.js'
+},
+resolve: { extensions: ['.js', '.ts'] },
+devServer: {
+static: path.join(__dirname, './build/'),
+port: 9000
+},
+module: {
+rules: [
+{ test: /\.ts$/, loader: 'ts-loader' }
+]
+},
+plugins: [
+new htmlWebpackPlugin({
+hash: true,
+title: 'Nasza pierwsza aplikacja typescript',
+template: './build/index.html',
+path: path.join(__dirname, './build/'),
+filename: 'index.html'
+})
+]
+}
+======================
+package.json
+"scripts": {
+"test": "echo \"Error: no test specified\" && exit 1",
+"start": "webpack serve --config ./webpack.config.js",
+"build": "webpack --config ./webpack.config.js"
+},
+======================
+src/index.ts:
+ // Zadanie 1: Generowanie tablicy liczb parzystych
+function generateEvenNumbers(start:number, end: number): number[] {
+    const result: number[] = [];
+    const firstEven = start % 2 === 0? start : start + 1;
+
+    for (let i = firstEven; i <= end; i+=2){
+        result.push(i);
+    }
+    console.log("Liczby parzyste: ", result);
+
+    return result;
+}
+//srednia
+function calculateAvg(numbers: number[]): number {
+    let sum = 0;
+
+    for (let i =0; i < numbers.length; i++){
+        sum+= numbers[i];
+    }
+
+    return sum / numbers.length;
+}
+//liczby pierwsze
+function generatePrimes(start: number, end:number): number[]{
+    const result : number[] = [];
+
+    for (let i = start; i <= end; i++){
+            if (i%2 != 0 && i != 1 || i === 2){
+                result.push(i);
+            }
+    }
+    return result;
+}
+
+//napisz funkcje ktora pobiera promien klola i zwraca jego obwód i pole
+function calculateCircle(radius: number): {pole: number, obwod: number} {
+    const pole = Math.PI*radius*radius;
+    const obwod = 2*Math.PI*radius;
+
+    return {pole, obwod};
+}
+
+const start_number = document.getElementById('start') as HTMLInputElement;
+const end_number = document.getElementById('end') as HTMLInputElement;
+
+const button = document.getElementById('generate') as HTMLButtonElement;
+const primesbutton = document.getElementById('generatePrimes') as HTMLButtonElement;
+
+const resultDiv = document.getElementById('result') as HTMLDivElement; 
+const averageDiv = document.getElementById('average') as HTMLDivElement;
+const primesDiv = document.getElementById('primes') as HTMLDivElement;
+
+button.addEventListener('click', () => {
+    const start = parseInt(start_number.value);
+    const end = parseInt(end_number.value);
+    const numbers = generateEvenNumbers(start , end);
+    resultDiv.innerText = numbers.join(', ');
+    averageDiv.innerText = calculateAvg(numbers).toString();
+    console.log(numbers);
+});
+
+primesbutton.addEventListener('click', () => {
+    const start = parseInt(start_number.value);
+    const end = parseInt(end_number.value);
+    const numbers = generatePrimes(start , end);
+    primesDiv.innerText = numbers.join(', ');
+});
+
+//zd2 obliczenie średniuej z wygenerowanej tablicy result 
+const promien = document.getElementById('promien') as HTMLInputElement;
+const circlebutton = document.getElementById('kolo') as HTMLButtonElement;
+const circleDiv = document.getElementById('koloResult') as HTMLDivElement;
+
+circlebutton.addEventListener ('click', () => {
+    const pr = parseInt(promien.value);
+    const circle = calculateCircle(pr);
+    circleDiv.innerText='Pole:'+ circle.pole + ' Obwod:' + circle.obwod;
+});
+
+//zadanie fizzbuzz
+function fizzbuzz(n: number): string[] {
+    const result : string[]=[];
+
+    for(let i = 1;i<=n;i++){
+        if(i%3 ===0 && i%5 ===0){
+            result.push('FizzBuzz');
+        }
+        else if(i%3 ===0){
+            result.push('Fizz');
+        }
+        else if(i%5 ===0){
+            result.push('Buzz');
+        }
+        else{
+            result.push(i.toString());
+        }
+    }
+    return result;
+}
+
+const fb_n = document.getElementById('fb_zakres') as HTMLInputElement;
+const fb_button = document.getElementById('fizzBuzzButton') as HTMLButtonElement;
+const fb_result = document.getElementById('fizzBuzzResult') as HTMLDivElement;
+
+fb_button.addEventListener('click', () => {
+    const n = parseInt(fb_n.value);
+    const fizzbuzz_result = fizzbuzz(n);
+    fb_result.innerText = fizzbuzz_result.join(', ');
+})
+
+//Napisz funkcję, która generuje tablicę zawierającą pierwsze n liczb ciągu Fibonacciego.
+function fibonacci(n: number): number[]{
+    const result : number [] = [];
+
+    for(let i = 0; i < n; i++){
+        if(i === 0 || i === 1){
+            result.push(i);
+        }
+        else{
+            result.push(result[i-1] + result[i-2]);
+        }
+    }
+    return result;
+}
+
+const fib_n = document.getElementById('fib_n') as HTMLInputElement;
+const fib_button = document.getElementById('fibButton') as HTMLButtonElement;
+const fib_result = document.getElementById('fibResult') as HTMLDivElement;
+
+fib_button.addEventListener('click', () =>{
+    const n = parseInt(fib_n.value);
+    const fibonacci_result = fibonacci(n);
+    fib_result.innerText = fibonacci_result.join(', ');
+})
+
+//Napisz funkcję, która sprawdza, czy dana liczba jest liczbą doskonałą. Liczba doskonała to taka, która jest równa sumie swoich dzielników właściwych (np. 6, 28).
+function isPerfect(num: number): boolean{
+
+    if(num <= 0){
+        return false;
+    }
+    else if(num === 1){
+        return false;
+    }
+    else{
+        let sum = 0;
+        for(let i = 1; i < num; i++){
+            if(num % i === 0){
+                sum+=i;
+            }
+        }
+        if(sum === num){
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
+}
+
+const perfect_n = document.getElementById('perfect_n') as HTMLInputElement;
+const perfect_button = document.getElementById('perfectButton') as HTMLButtonElement;
+const perfect_result = document.getElementById('perfectResult') as HTMLDivElement;
+
+perfect_button.addEventListener('click', () =>{
+    const n = parseInt(perfect_n.value);
+    const result = isPerfect(n);
+
+    if(result === false){
+        perfect_result.innerText = 'Liczba nie jest doskonała';
+    }else{
+        perfect_result.innerText = 'Liczba jest doskonała';
+    }
+})
+======================
+/dist/index.html:
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>zd1</title>
+</head>
+<body>
+    <input type="number" id="start" placeholder="liczba poczatkowa zakresu">
+    <input type="number" id="end" placeholder="liczba koncowa zakresu">
+    <button id="generate">generuj</button>
+    <button id="generatePrimes">generuj liczby pierwsze</button>
+    <br>
+    Tablica liczb parzystych:
+    <div id="result"> </div>
+    Średnia z tablicy:
+    <div id="average"> </div>
+
+    Tablica liczb pierwszych:
+    <div id="primes"> </div>
+
+    <hr>
+    <input type="number" id="promien" placeholder="promien kola">
+    <button id="kolo">oblicz pole i obwod kola</button>
+    <div id="koloResult"> </div>
+
+    <hr>
+    <h1>Fizz Buzz</h1>
+    <input type="number" id="fb_zakres" placeholder="zakres do fizz buzz">
+    <button id="fizzBuzzButton">Generuj Fizz Buzz</button>
+    <div id="fizzBuzzResult"> </div>
+
+    <hr>
+    <h1>Ciąg fibonacciego</h1>
+    <input type="number" id="fib_n" placeholder="ile liczb ciagu fibonacciego">
+    <button id="fibButton">Generuj ciag fibonacciego</button>
+    <div id="fibResult"> </div>
+
+    <hr>
+    <h1>Liczba doskonala</h1>
+    <input type="number" id="perfect_n" placeholder="sprawdz czy liczba jest doskonala">
+    <button id="perfectButton">Sprawdz liczbe doskonala</button>
+    <div id="perfectResult"> </div>
+
+</body>
+</html>
+
+
+
+
+
