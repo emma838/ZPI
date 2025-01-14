@@ -128,3 +128,78 @@ export class AppComponent {
   }
 }
 
+//spradzanie trojkata:
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-root',
+  template: `
+    <div>
+      <h2>Sprawdź czy można utworzyć trójkąt</h2>
+      
+      <div>
+        <label>Bok a: </label>
+        <input type="number" #bokA>
+      </div>
+      
+      <div>
+        <label>Bok b: </label>
+        <input type="number" #bokB>
+      </div>
+      
+      <div>
+        <label>Bok c: </label>
+        <input type="number" #bokC>
+      </div>
+
+      <button (click)="sprawdzTrojkat(bokA.value, bokB.value, bokC.value)">
+        Sprawdź
+      </button>
+
+      <p *ngIf="wynik !== ''">{{ wynik }}</p>
+    </div>
+  `,
+  styles: [`
+    div {
+      margin: 10px;
+    }
+    input {
+      margin-left: 5px;
+    }
+    button {
+      margin-top: 10px;
+    }
+    .error {
+      color: red;
+    }
+  `]
+})
+export class AppComponent {
+  wynik: string = '';
+
+  sprawdzTrojkat(a: string, b: string, c: string) {
+    // Konwersja string na number
+    const bokA = Number(a);
+    const bokB = Number(b);
+    const bokC = Number(c);
+
+    // Sprawdzenie czy wartości są dodatnie
+    if (bokA <= 0 || bokB <= 0 || bokC <= 0) {
+      this.wynik = 'Długości boków muszą być większe od 0!';
+      return;
+    }
+
+    // Sprawdzenie warunku na istnienie trójkąta
+    // Suma długości dwóch dowolnych boków musi być większa od długości trzeciego boku
+    if (bokA + bokB > bokC && 
+        bokB + bokC > bokA && 
+        bokA + bokC > bokB) {
+      this.wynik = 'Z podanych boków można utworzyć trójkąt!';
+    } else {
+      this.wynik = 'Z podanych boków NIE można utworzyć trójkąta!';
+    }
+  }
+}
+
+
+
