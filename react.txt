@@ -156,6 +156,106 @@ function App(){
 
 export default App;
 
+import { useState } from "react";
+import { 
+  TextField, 
+  Button, 
+  Box, 
+  Typography, 
+  Alert
+} from "@mui/material";
+
+export const TriangleChecker = () => {
+  // Stan przechowujący wartości boków i wynik
+  const [sides, setSides] = useState({
+    a: '',
+    b: '',
+    c: ''
+  });
+  const [result, setResult] = useState<string | null>(null);
+
+  // Funkcja sprawdzająca czy można utworzyć trójkąt
+  const checkTriangle = () => {
+    // Konwersja string na number
+    const a = Number(sides.a);
+    const b = Number(sides.b);
+    const c = Number(sides.c);
+
+    // Sprawdzenie czy wszystkie wartości są dodatnie
+    if (a <= 0 || b <= 0 || c <= 0) {
+      setResult("Długości boków muszą być większe od 0!");
+      return;
+    }
+
+    // Sprawdzenie warunku na istnienie trójkąta
+    // (suma długości dwóch dowolnych boków musi być większa od długości trzeciego boku)
+    if (a + b > c && b + c > a && a + c > b) {
+      setResult("Z podanych długości można utworzyć trójkąt!");
+    } else {
+      setResult("Z podanych długości NIE można utworzyć trójkąta!");
+    }
+  };
+
+  // Obsługa zmiany wartości w polach input
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setSides(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  return (
+    <Box sx={{ maxWidth: 400, margin: '20px auto', p: 3 }}>
+      <Typography variant="h5" gutterBottom>
+        Sprawdź czy można utworzyć trójkąt
+      </Typography>
+      
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <TextField
+          label="Długość boku a"
+          name="a"
+          type="number"
+          value={sides.a}
+          onChange={handleChange}
+          fullWidth
+        />
+        
+        <TextField
+          label="Długość boku b"
+          name="b"
+          type="number"
+          value={sides.b}
+          onChange={handleChange}
+          fullWidth
+        />
+        
+        <TextField
+          label="Długość boku c"
+          name="c"
+          type="number"
+          value={sides.c}
+          onChange={handleChange}
+          fullWidth
+        />
+
+        <Button 
+          variant="contained" 
+          onClick={checkTriangle}
+          disabled={!sides.a || !sides.b || !sides.c}
+        >
+          Sprawdź
+        </Button>
+
+        {result && (
+          <Alert severity={result.includes("można") ? "success" : "error"}>
+            {result}
+          </Alert>
+        )}
+      </Box>
+    </Box>
+  );
+};
 
 
 
