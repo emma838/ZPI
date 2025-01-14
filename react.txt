@@ -256,6 +256,131 @@ export const TriangleChecker = () => {
     </Box>
   );
 };
+==================
+pierwiastek bez math.sqrt
+import { useState } from "react";
+import { 
+  TextField, 
+  Button, 
+  Box, 
+  Typography, 
+  Alert,
+  CircularProgress 
+} from "@mui/material";
+
+export const SquareRoot = () => {
+  const [number, setNumber] = useState<string>("");
+  const [result, setResult] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [isCalculating, setIsCalculating] = useState(false);
+
+  // Funkcja obliczająca pierwiastek metodą Newtona
+  const calculateSquareRoot = (n: number, precision: number = 0.0001): number => {
+    if (n < 0) throw new Error("Nie można obliczyć pierwiastka z liczby ujemnej");
+    if (n === 0) return 0;
+    
+    let x = n; // Początkowe przybliżenie
+    let root;
+    
+    // Metoda Newtona: x(n+1) = (x(n) + N/x(n))/2
+    do {
+      root = x;
+      x = (x + n / x) / 2;
+    } while (Math.abs(root - x) > precision);
+    
+    return x;
+  };
+
+  const handleCalculate = () => {
+    setError(null);
+    setResult(null);
+    setIsCalculating(true);
+
+    try {
+      const inputNumber = parseFloat(number);
+      
+      if (isNaN(inputNumber)) {
+        throw new Error("Proszę wprowadzić poprawną liczbę");
+      }
+
+      // Symulacja dłuższego obliczenia
+      setTimeout(() => {
+        try {
+          const sqrtResult = calculateSquareRoot(inputNumber);
+          setResult(sqrtResult.toFixed(6));
+          setIsCalculating(false);
+        } catch (err) {
+          if (err instanceof Error) {
+            setError(err.message);
+          } else {
+            setError("Wystąpił nieznany błąd");
+          }
+          setIsCalculating(false);
+        }
+      }, 500);
+
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("Wystąpił nieznany błąd");
+      }
+      setIsCalculating(false);
+    }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setNumber(e.target.value);
+    setResult(null);
+    setError(null);
+  };
+
+  return (
+    <Box sx={{ maxWidth: 400, margin: '20px auto', p: 3 }}>
+      <Typography variant="h5" gutterBottom>
+        Kalkulator pierwiastka kwadratowego
+      </Typography>
+      
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <TextField
+          label="Wprowadź liczbę"
+          type="number"
+          value={number}
+          onChange={handleInputChange}
+          fullWidth
+          error={!!error}
+          helperText={error}
+        />
+
+        <Button 
+          variant="contained" 
+          onClick={handleCalculate}
+          disabled={!number || isCalculating}
+        >
+          {isCalculating ? (
+            <CircularProgress size={24} color="inherit" />
+          ) : (
+            "Oblicz pierwiastek"
+          )}
+        </Button>
+
+        {result && !error && (
+          <Alert severity="success">
+            Pierwiastek z {number} wynosi: {result}
+          </Alert>
+        )}
+
+        {/* Dodatkowe informacje o metodzie */}
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+          Obliczenia wykonywane są metodą Newtona (metoda stycznych).
+          Jest to iteracyjna metoda przybliżania wartości pierwiastka kwadratowego.
+        </Typography>
+      </Box>
+    </Box>
+  );
+};
+
+====================
 
 
 
