@@ -297,7 +297,70 @@ perfect_button.addEventListener('click', () =>{
 
 </body>
 </html>
+==========================
+hm/h / m/s
+class SpeedConverter {
+    private kmPerHour: number;
 
+    constructor(kmPerHour: number) {
+        this.kmPerHour = kmPerHour;
+    }
+
+    // Metoda przeliczająca km/h na m/s
+    toMetersPerSecond(): number {
+        // Wzór: (km/h) * (1000m/1km) * (1h/3600s) = (km/h) * (1000/3600)
+        return this.kmPerHour * (1000 / 3600);
+    }
+
+    // Getter dla wartości w km/h
+    getKmPerHour(): number {
+        return this.kmPerHour;
+    }
+
+    // Setter dla wartości w km/h
+    setKmPerHour(speed: number): void {
+        this.kmPerHour = speed;
+    }
+
+    // Metoda zwracająca sformatowany wynik
+    getFormattedResult(): string {
+        return `${this.kmPerHour} km/h = ${this.toMetersPerSecond().toFixed(2)} m/s`;
+    }
+}
+
+// Przykład użycia z HTML:
+/*
+<input type="number" id="speedInput" placeholder="Podaj prędkość w km/h">
+<button id="convert">Przelicz</button>
+<div id="result"></div>
+*/
+
+document.addEventListener('DOMContentLoaded', () => {
+    const speedInput = document.getElementById('speedInput') as HTMLInputElement;
+    const convertButton = document.getElementById('convert') as HTMLButtonElement;
+    const resultDiv = document.getElementById('result') as HTMLDivElement;
+
+    convertButton.addEventListener('click', () => {
+        const speed = parseFloat(speedInput.value);
+        
+        if (isNaN(speed)) {
+            resultDiv.innerText = 'Proszę podać poprawną wartość';
+            return;
+        }
+
+        const converter = new SpeedConverter(speed);
+        resultDiv.innerText = converter.getFormattedResult();
+    });
+});
+
+// Przykłady użycia w konsoli:
+const converter = new SpeedConverter(36); // 36 km/h
+console.log(converter.toMetersPerSecond()); // 10 m/s
+console.log(converter.getFormattedResult()); // "36 km/h = 10.00 m/s"
+
+// Zmiana wartości
+converter.setKmPerHour(72);
+console.log(converter.getFormattedResult()); // "72 km/h = 20.00 m/s"
 
 
 
