@@ -200,6 +200,131 @@ export class AppComponent {
     }
   }
 }
+=====
+pierwiastek bez math.sqrt
+import { Component } from '@angular/core';
 
+@Component({
+  selector: 'app-root',
+  template: `
+    <div class="container">
+      <h2>Kalkulator pierwiastka kwadratowego</h2>
+      
+      <div class="input-group">
+        <label>Podaj liczbę: </label>
+        <input type="number" #liczba>
+      </div>
+
+      <button (click)="obliczPierwiastek(liczba.value)">
+        Oblicz pierwiastek
+      </button>
+
+      <div class="result" *ngIf="wynik !== null">
+        <p>Pierwiastek z {{ liczbaWejsciowa }} wynosi: {{ wynik }}</p>
+        <p class="info">Obliczono metodą Newtona (bez użycia Math.sqrt)</p>
+      </div>
+
+      <p class="error" *ngIf="error">{{ error }}</p>
+    </div>
+  `,
+  styles: [`
+    .container {
+      max-width: 400px;
+      margin: 20px auto;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    .input-group {
+      margin: 15px 0;
+    }
+
+    input {
+      margin-left: 10px;
+      padding: 5px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      padding: 8px 16px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 10px 0;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    .result {
+      margin-top: 20px;
+      padding: 10px;
+      background-color: #f8f9fa;
+      border-radius: 4px;
+    }
+
+    .info {
+      font-size: 0.8em;
+      color: #666;
+    }
+
+    .error {
+      color: red;
+      margin-top: 10px;
+    }
+  `]
+})
+export class AppComponent {
+  wynik: number | null = null;
+  error: string = '';
+  liczbaWejsciowa: number = 0;
+
+  obliczPierwiastek(value: string) {
+    this.error = '';
+    this.wynik = null;
+    
+    const liczba = Number(value);
+    this.liczbaWejsciowa = liczba;
+
+    // Sprawdzenie poprawności danych wejściowych
+    if (isNaN(liczba)) {
+      this.error = 'Proszę podać prawidłową liczbę!';
+      return;
+    }
+
+    if (liczba < 0) {
+      this.error = 'Liczba nie może być ujemna!';
+      return;
+    }
+
+    if (liczba === 0) {
+      this.wynik = 0;
+      return;
+    }
+
+    // Metoda Newtona (iteracyjna)
+    this.wynik = this.metodaNewtona(liczba);
+  }
+
+  private metodaNewtona(n: number): number {
+    const EPSILON = 0.000001; // dokładność obliczeń
+    let x = n; // początkowe przybliżenie
+    let root: number;
+    
+    // Iterujemy do momentu osiągnięcia zadanej dokładności
+    do {
+      root = x;
+      x = (x + n / x) / 2;
+    } while (Math.abs(root - x) > EPSILON);
+
+    // Zaokrąglamy wynik do 6 miejsc po przecinku
+    return Number(x.toFixed(6));
+  }
+}
 
 
